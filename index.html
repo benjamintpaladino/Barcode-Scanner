@@ -6,19 +6,19 @@
   <title>Scan & Lookup</title>
   <style>
     body { font-family: sans-serif; background: #e0f0ff; padding: 2em; text-align: center; }
-    input[type="text"] { font-size: 1.5em; padding: 0.5em; width: 80%; }
+    input[type="text"] { font-size: 1.5em; padding: 0.5em; width: 80%; margin-top: 1em; }
     #output { margin-top: 2em; font-size: 1.5em; }
     .found { background-color: #b3e5fc; }
     .not-found { color: red; }
     button { font-size: 1.2em; padding: 0.5em 1em; margin-top: 1em; background-color: #007aff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    video { margin-top: 1em; width: 100%; max-width: 400px; display: none; }
+    video { margin-top: 1em; width: 100%; max-width: 400px; }
   </style>
 </head>
 <body>
   <h1>Scan Barcode</h1>
+  <video id="preview"></video>
   <input type="text" id="scanner" inputmode="numeric" placeholder="Scan or type here...">
   <button onclick="startCameraInput()">Use Camera</button>
-  <video id="preview"></video>
   <div id="output">Waiting for scan...</div>
 
   <script src="https://unpkg.com/@zxing/library@latest"></script>
@@ -36,11 +36,12 @@
             upc3: row[3]?.toString().trim() ?? ''
           });
         });
-        console.log("Loaded items:", items.slice(0, 5)); // debug
+        console.log("Loaded items:", items.slice(0, 5));
       });
 
     const scannerInput = document.getElementById("scanner");
     const output = document.getElementById("output");
+    const previewElem = document.getElementById('preview');
     let inputBuffer = "";
     let inputTimeout;
 
@@ -81,14 +82,14 @@
 
     function startCameraInput() {
       const codeReader = new ZXing.BrowserBarcodeReader();
-      const previewElem = document.getElementById('preview');
       previewElem.style.display = 'block';
-
-      codeReader.decodeOnceFromVideoDevice(undefined, 'preview').then(result => {
-        handleScan(result.text);
-        previewElem.style.display = 'none';
-      }).catch(err => {
-        output.innerHTML = `<div class='not-found'>Camera error: ${err}</div>`;
+      codeReader.decodeFromVideoDevice(undefined, 'preview', (result, err) => {
+        if (result) {
+          handleScan(result.text);
+        }
+        if (err && !(err instanceof ZXing.NotFoundException)) {
+          output.innerHTML = `<div class='not-found'>Camera error: ${err}</div>`;
+        }
       });
     }
   </script>
