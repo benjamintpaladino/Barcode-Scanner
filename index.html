@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scan & Lookup</title>
   <style>
-    body { font-family: sans-serif; background: #f5faff; padding: 2em; text-align: center; }
+    body { font-family: sans-serif; background: #e0f0ff; padding: 2em; text-align: center; }
     input[type="text"] { font-size: 1.5em; padding: 0.5em; width: 80%; }
     #output { margin-top: 2em; font-size: 1.5em; }
-    .found { background-color: #d7efff; }
+    .found { background-color: #b3e5fc; }
     .not-found { color: red; }
     button { font-size: 1.2em; padding: 0.5em 1em; margin-top: 1em; background-color: #007aff; color: white; border: none; border-radius: 5px; cursor: pointer; }
     video { margin-top: 1em; width: 100%; max-width: 400px; display: none; }
@@ -30,12 +30,13 @@
       .then(data => {
         data.forEach(row => {
           items.push({
-            sku: row[0],
-            name: row[1],
-            upc: row[2],
-            upc3: row[3]
+            sku: row[0]?.toString() ?? '',
+            name: row[1]?.toString() ?? '',
+            upc: row[2]?.toString().trim() ?? '',
+            upc3: row[3]?.toString().trim() ?? ''
           });
         });
+        console.log("Loaded items:", items.slice(0, 5)); // debug
       });
 
     const scannerInput = document.getElementById("scanner");
@@ -49,8 +50,8 @@
     }
 
     function handleScan(code) {
-      const cleanCode = code.trim().replace(/^0+/, "");
-      const match = items.find(item => item.upc.replace(/^0+/, "") === cleanCode || item.upc3.replace(/^0+/, "") === cleanCode);
+      const cleanCode = code.trim();
+      const match = items.find(item => item.upc === cleanCode || item.upc3 === cleanCode);
 
       if (match) {
         output.innerHTML = `<div class='found'><strong>SKU:</strong> ${match.sku}<br><strong>Name:</strong> ${match.name}</div>`;
