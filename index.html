@@ -11,41 +11,96 @@
     .found { background-color: #d7efff; }
     .not-found { color: red; }
     button { font-size: 1.2em; padding: 0.5em 1em; margin-top: 1em; background-color: #007aff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    video { margin-top: 1em; width: 100%; max-width: 400px; display: none; }
   </style>
 </head>
 <body>
   <h1>Scan Barcode</h1>
-  <input type="text" id="scanner" inputmode="numeric" placeholder="Scan here..." autofocus>
-  <button onclick="focusInput()">Use Camera</button>
+  <input type="text" id="scanner" inputmode="numeric" placeholder="Scan or type here...">
+  <button onclick="startCameraInput()">Use Camera</button>
+  <video id="preview"></video>
   <div id="output">Waiting for scan...</div>
 
+  <script src="https://unpkg.com/@zxing/library@latest"></script>
   <script>
     const items = [
       { sku: "EC10774", name: "Pink Ginger Jar", upc: "794300110698", upc3: "EC10774" },
       { sku: "EC10678", name: "Orange Ginger Jar", upc: "794300108763", upc3: "EC10678" },
       { sku: "EC10679", name: "Purple Ginger Jar", upc: "794300108770", upc3: "EC10679" },
+      { sku: "EC10701", name: "Champagne Flutes", upc: "794300108992", upc3: "EC10701" },
+      { sku: "EC10691", name: "Coonhound", upc: "794300108893", upc3: "EC10691" },
+      { sku: "EC10752", name: "Vintage Nutcrackers", upc: "794300109500", upc3: "EC10752" },
+      { sku: "EC10744", name: "Pink & Gold Nutcrackers", upc: "794300109425", upc3: "EC10744" },
+      { sku: "EC10746", name: "Chinoiserie Nutcrackers", upc: "794300109449", upc3: "EC10746" },
+      { sku: "EC10722", name: "Golden Nativity", upc: "794300109203", upc3: "EC10722" },
+      { sku: "EC10761", name: "College Station Nutcracker", upc: "794300109593", upc3: "EC10761" },
+      { sku: "EC10762", name: "Fayetteville Nutcracker", upc: "794300109609", upc3: "EC10762" },
+      { sku: "EC10763", name: "Tuscaloosa Nutcracker", upc: "794300109616", upc3: "EC10763" },
+      { sku: "EC10764", name: "Waco Nutcracker", upc: "794300109623", upc3: "EC10764" },
+      { sku: "EC10765", name: "Baton Rouge Nutcracker", upc: "794300109630", upc3: "EC10765" },
+      { sku: "EC10766", name: "Oxford Nutcracker", upc: "794300109647", upc3: "EC10766" },
+      { sku: "EC10767", name: "Stillwater Nutcracker", upc: "794300109654", upc3: "EC10767" },
+      { sku: "EC10768", name: "Norman Nutcracker", upc: "794300109661", upc3: "EC10768" },
+      { sku: "EC10769", name: "Fort Worth Nutcracker", upc: "794300109678", upc3: "EC10769" },
+      { sku: "EC10770", name: "Lubbock Nutcracker", upc: "794300109685", upc3: "EC10770" },
+      { sku: "EC10771", name: "Athens Nutcracker", upc: "794300109692", upc3: "EC10771" },
+      { sku: "EC10772", name: "Austin Nutcracker", upc: "794300109708", upc3: "EC10772" },
+      { sku: "EC10773", name: "Dallas Nutcracker", upc: "794300109715", upc3: "EC10773" }
     ];
 
     const scannerInput = document.getElementById("scanner");
     const output = document.getElementById("output");
+    let inputBuffer = "";
+    let inputTimeout;
 
-    function focusInput() {
-      scannerInput.focus();
+    function resetInput() {
+      inputBuffer = "";
+      scannerInput.value = "";
     }
 
-    scannerInput.addEventListener("input", () => {
-      const code = scannerInput.value.trim().replace(/^0+/, "");
-      scannerInput.value = "";
-      const match = items.find(item => item.upc.replace(/^0+/, "") === code || item.upc3.replace(/^0+/, "") === code);
+    function handleScan(code) {
+      const cleanCode = code.trim().replace(/^0+/, "");
+      const match = items.find(item => item.upc.replace(/^0+/, "") === cleanCode || item.upc3.replace(/^0+/, "") === cleanCode);
 
       if (match) {
         output.innerHTML = `<div class='found'><strong>SKU:</strong> ${match.sku}<br><strong>Name:</strong> ${match.name}</div>`;
         document.body.className = "found";
       } else {
-        output.innerHTML = `<div class='not-found'>No match found for: ${code}</div>`;
+        output.innerHTML = `<div class='not-found'>No match found for: ${cleanCode}</div>`;
         document.body.className = "";
       }
+    }
+
+    scannerInput.addEventListener("input", (e) => {
+      clearTimeout(inputTimeout);
+      inputBuffer += e.data || scannerInput.value.slice(-1);
+
+      inputTimeout = setTimeout(() => {
+        handleScan(inputBuffer);
+        resetInput();
+      }, 500);
     });
+
+    scannerInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        handleScan(scannerInput.value);
+        resetInput();
+      }
+    });
+
+    function startCameraInput() {
+      const codeReader = new ZXing.BrowserBarcodeReader();
+      const previewElem = document.getElementById('preview');
+      previewElem.style.display = 'block';
+
+      codeReader.decodeOnceFromVideoDevice(undefined, 'preview').then(result => {
+        handleScan(result.text);
+        previewElem.style.display = 'none';
+      }).catch(err => {
+        output.innerHTML = `<div class='not-found'>Camera error: ${err}</div>`;
+      });
+    }
   </script>
 </body>
 </html>
+
