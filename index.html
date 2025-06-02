@@ -5,13 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scan & Lookup</title>
   <style>
-    body { font-family: sans-serif; background: #e0f0ff; padding: 2em; text-align: center; }
-    input[type="text"] { font-size: 1.5em; padding: 0.5em; width: 80%; margin-top: 1em; }
-    #output { margin-top: 2em; font-size: 1.5em; }
-    .found { background-color: #b3e5fc; }
-    .not-found { color: red; }
-    button { font-size: 1.2em; padding: 0.5em 1em; margin-top: 1em; background-color: #007aff; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    video { margin-top: 1em; width: 100%; max-width: 400px; }
+    body {
+      font-family: sans-serif;
+      background: #e0f0ff;
+      padding: 2em;
+      text-align: center;
+      transition: background-color 0.5s;
+    }
+    input[type="text"] {
+      font-size: 1.5em;
+      padding: 0.5em;
+      width: 80%;
+      margin-top: 1em;
+    }
+    #output {
+      margin-top: 2em;
+      font-size: 1.5em;
+    }
+    .found {
+      background-color: #b3e5fc;
+    }
+    .not-found {
+      color: red;
+    }
+    button {
+      font-size: 1.2em;
+      padding: 0.5em 1em;
+      margin-top: 1em;
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    video {
+      margin-top: 1em;
+      width: 100%;
+      max-width: 400px;
+    }
   </style>
 </head>
 <body>
@@ -45,6 +76,14 @@
     let inputBuffer = "";
     let inputTimeout;
 
+    function flashBackground(color) {
+      const original = document.body.style.backgroundColor;
+      document.body.style.backgroundColor = color;
+      setTimeout(() => {
+        document.body.style.backgroundColor = original;
+      }, 300);
+    }
+
     function resetInput() {
       inputBuffer = "";
       scannerInput.value = "";
@@ -56,10 +95,10 @@
 
       if (match) {
         output.innerHTML = `<div class='found'><strong>SKU:</strong> ${match.sku}<br><strong>Name:</strong> ${match.name}</div>`;
-        document.body.className = "found";
+        flashBackground('#a5d6a7');
       } else {
         output.innerHTML = `<div class='not-found'>No match found for: ${cleanCode}</div>`;
-        document.body.className = "";
+        flashBackground('#ef9a9a');
       }
     }
 
