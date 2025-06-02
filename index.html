@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scan & Lookup</title>
+  <title>Fix Ben's Mistakes</title>
   <style>
     body {
       font-family: sans-serif;
-      background: #e0f0ff;
+      background: #e0f7fa;
       padding: 2em;
       text-align: center;
-      transition: background-color 0.5s;
+      transition: background-color 0.2s;
     }
     input[type="text"] {
       font-size: 1.5em;
@@ -42,11 +42,13 @@
       margin-top: 1em;
       width: 100%;
       max-width: 400px;
+      aspect-ratio: 4 / 1;
+      border: 2px dashed #007aff;
     }
   </style>
 </head>
 <body>
-  <h1>Scan Barcode</h1>
+  <h1>Fix Ben's Mistakes</h1>
   <video id="preview"></video>
   <input type="text" id="scanner" inputmode="numeric" placeholder="Scan or type here...">
   <button onclick="startCameraInput()">Use Camera</button>
@@ -67,7 +69,6 @@
             upc3: row[3]?.toString().trim() ?? ''
           });
         });
-        console.log("Loaded items:", items.slice(0, 5));
       });
 
     const scannerInput = document.getElementById("scanner");
@@ -75,13 +76,19 @@
     const previewElem = document.getElementById('preview');
     let inputBuffer = "";
     let inputTimeout;
+    let flashCount = 0;
 
     function flashBackground(color) {
       const original = document.body.style.backgroundColor;
-      document.body.style.backgroundColor = color;
-      setTimeout(() => {
-        document.body.style.backgroundColor = original;
-      }, 300);
+      flashCount = 0;
+      const flash = setInterval(() => {
+        document.body.style.backgroundColor = color;
+        setTimeout(() => {
+          document.body.style.backgroundColor = original;
+        }, 100);
+        flashCount++;
+        if (flashCount >= 2) clearInterval(flash);
+      }, 200);
     }
 
     function resetInput() {
@@ -95,10 +102,10 @@
 
       if (match) {
         output.innerHTML = `<div class='found'><strong>SKU:</strong> ${match.sku}<br><strong>Name:</strong> ${match.name}</div>`;
-        flashBackground('#a5d6a7');
+        flashBackground('#00e676');
       } else {
         output.innerHTML = `<div class='not-found'>No match found for: ${cleanCode}</div>`;
-        flashBackground('#ef9a9a');
+        flashBackground('#ff5252');
       }
     }
 
@@ -125,9 +132,6 @@
       codeReader.decodeFromVideoDevice(undefined, 'preview', (result, err) => {
         if (result) {
           handleScan(result.text);
-        }
-        if (err && !(err instanceof ZXing.NotFoundException)) {
-          output.innerHTML = `<div class='not-found'>Camera error: ${err}</div>`;
         }
       });
     }
